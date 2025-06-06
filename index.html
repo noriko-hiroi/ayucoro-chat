@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>あゆコロミュージアムアシスタント</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f7f7f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #main-wrapper {
+      display: flex;
+      width: 90%;
+      max-width: 1000px;
+      height: 80vh;
+      border: 1px solid #ccc;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #left-panel {
+      width: 30%;
+      background: #e0f0ff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 20px;
+      border-right: 1px solid #ccc;
+    }
+
+    #right-panel {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    #ayucoro-img {
+      width: 80%;
+      border-radius: 20px;
+    }
+
+    #chat-box {
+      flex: 1;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+      background: #fafafa;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bubble {
+      padding: 10px 15px;
+      border-radius: 15px;
+      max-width: 75%;
+      word-wrap: break-word;
+      position: relative;
+      font-size: 0.95em;
+    }
+
+    .user-bubble {
+      align-self: flex-end;
+      background: #9c27b0;
+      color: white;
+    }
+
+    .user-bubble::after {
+      content: "";
+      position: absolute;
+      right: -10px;
+      top: 10px;
+      border-width: 10px 0 10px 10px;
+      border-style: solid;
+      border-color: transparent transparent transparent #9c27b0;
+    }
+
+    .ayucoro-bubble {
+      align-self: flex-start;
+      background: #1976d2;
+      color: white;
+    }
+
+    .ayucoro-bubble::after {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 10px;
+      border-width: 10px 10px 10px 0;
+      border-style: solid;
+      border-color: transparent #1976d2 transparent transparent;
+    }
+
+    #input-area {
+      display: flex;
+      gap: 10px;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
+    }
+
+    #send-btn, #mic-btn {
+      padding: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #4caf50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="main-wrapper">
+    <div id="left-panel">
+      <img id="ayucoro-img" src="normal.png" alt="Ayucoro cartoon" />
+    </div>
+
+    <div id="right-panel">
+      <div id="chat-box"></div>
+      <div id="input-area">
+        <input id="user-input" type="text" placeholder="文字打つところ" />
+        <button id="send-btn">送信</button>
+        <button id="mic-btn">🎤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ayucoro = document.getElementById("ayucoro-img");
+    const chatBox = document.getElementById("chat-box");
+    const input = document.getElementById("user-input");
+
+    const sendButton = document.getElementById("send-btn");
+    const micButton = document.getElementById("mic-btn");
+
+    sendButton.addEventListener("click", async () => {
+      const message = input.value.trim();
+      if (!message) return;
+      appendUserMessage(message);
+      input.value = "";
+
+      reactToKeyword(message);
+
+      const res = await fetch("https://c55f-34-46-10-152.ngrok-free.app/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+      appendAyucoroMessage(data.reply);
+      speak(data.reply);
+    });
+
+    function appendUserMessage(msg) {
+      const bubble = document.createElement("div");
+      bubble.className = "bubble user-bubble";
+      bubble.innerText = msg;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendAyucoroMessage(msg) {
+      const bubble = document.createElement("div");
+      bubble.className = "bubble ayucoro-bubble";
+      bubble.innerText = msg;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Voice input
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = "ja-JP";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      micButton.onclick = () => {
+        recognition.start();
+        micButton.textContent = "🎙️ 聞き取り中…";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        micButton.textContent = "🎤";
+      };
+
+      recognition.onerror = () => {
+        micButton.textContent = "🎤";
+        alert("音声入力に失敗しました。");
+      };
+    } else {
+      micButton.disabled = true;
+      micButton.textContent = "🎤（未対応）";
+    }
+
+    // Voice output
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ja-JP";
+      speechSynthesis.speak(utterance);
+    }
+
+    // Keyword reactions
+    const keywords = {
+      "北条": "知ってる! 戦国武将だ",
+      "武田": "あ、強い敵",
+      "かわいい": "ありがとう！えへ。",
+    };
+
+    function reactToKeyword(message) {
+      for (const [keyword, reaction] of Object.entries(keywords)) {
+        if (message.includes(keyword)) {
+          ayucoro.style.transform = "scale(1.05)";
+          setTimeout(() => {
+            ayucoro.style.transform = "scale(1)";
+          }, 1000);
+          speak(reaction);
+          break;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
