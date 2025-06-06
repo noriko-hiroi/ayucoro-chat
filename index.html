@@ -19,7 +19,7 @@
       display: flex;
       width: 90%;
       max-width: 1000px;
-      height: 80vh;
+      height: 90vh;
       border: 1px solid #ccc;
       background: white;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -105,7 +105,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      width: 90%;
+      width: 100%;
     }
 
     #user-input {
@@ -116,22 +116,26 @@
     }
 
     #send-btn, #mic-btn {
-      #padding: 10px;
-      #font-size: 1em;
-      #cursor: pointer;
-      #border: none;
-      #border-radius: 5px;
-      #background: #4caf50;
-      #color: white;
-    #}
-    
-    #send-btn, #mic-btn {
       flex: 1 1 15%;
       min-width: 70px;
       padding: 10px;
       font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #4caf50;
+      color: white;
     }
-      
+
+    #test-btn {
+      flex: 1 1 100%;
+      padding: 10px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -144,9 +148,10 @@
     <div id="right-panel">
       <div id="chat-box"></div>
       <div id="input-area">
-        <input id="user-input" type="text" placeholder="文字打つところ" />
+        <input id="user-input" type="text" placeholder="文字打っところ" />
         <button id="send-btn">送信</button>
         <button id="mic-btn">🎤</button>
+        <button id="test-btn">🔊 音声テスト</button>
       </div>
     </div>
   </div>
@@ -158,6 +163,7 @@
 
     const sendButton = document.getElementById("send-btn");
     const micButton = document.getElementById("mic-btn");
+    const testButton = document.getElementById("test-btn");
 
     sendButton.addEventListener("click", async () => {
       const message = input.value.trim();
@@ -167,7 +173,7 @@
 
       reactToKeyword(message);
 
-      const res = await fetch("https://c55f-34-46-10-152.ngrok-free.app/chat", {
+      const res = await fetch("https://YOUR_NGROK_URL/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message })
@@ -228,6 +234,11 @@
       speechSynthesis.speak(utterance);
     }
 
+    // Test button for voice
+    testButton.addEventListener("click", () => {
+      speak("これはテスト音声です。あゆコロは話します！");
+    });
+
     // Keyword reactions
     const keywords = {
       "北条": "知ってる! 戦国武将だ",
@@ -247,12 +258,12 @@
         }
       }
     }
-      
-    let firstInteraction = true;
 
+    // ✅ One-time dummy utterance to "unlock" speaker on Safari
+    let firstInteraction = true;
     document.body.addEventListener("click", () => {
       if (firstInteraction) {
-        const dummy = new SpeechSynthesisUtterance("");
+        const dummy = new SpeechSynthesisUtterance(" ");
         dummy.lang = "ja-JP";
         speechSynthesis.speak(dummy);
         firstInteraction = false;
