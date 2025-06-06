@@ -247,6 +247,17 @@
         }
       }
     }
+      
+    let firstInteraction = true;
+
+    document.body.addEventListener("click", () => {
+      if (firstInteraction) {
+        const dummy = new SpeechSynthesisUtterance("");
+        dummy.lang = "ja-JP";
+        speechSynthesis.speak(dummy);
+        firstInteraction = false;
+      }
+    });
   </script>
 </body>
 </html>
