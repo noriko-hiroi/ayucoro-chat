@@ -127,7 +127,7 @@
 
   <div id="main-wrapper">
     <div id="left-panel">
-      <img id="ayucoro-img" src="ayucoro.png" alt="Ayucoro cartoon" />
+      <img id="ayucoro-img" src="ayucoro/ayucoro.png" alt="Ayucoro cartoon" />
     </div>
 
     <div id="right-panel">
@@ -144,6 +144,7 @@
     const chatBox = document.getElementById("chat-box");
     const input = document.getElementById("user-input");
     const micButton = document.getElementById("mic-btn");
+    const imgElement = document.getElementById("ayucoro-img");
 
     function appendMessage(content, role) {
       const bubble = document.createElement("div");
@@ -160,15 +161,35 @@
       input.value = "";
 
       try {
-        const res = await fetch("https://73a0-34-139-70-191.ngrok-free.app/rag_query", {
+        const res = await fetch("https://dd48-34-139-70-191.ngrok-free.app/rag_query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: message })
         });
 
         const data = await res.json();
-        appendMessage(data.reply, "ayucoro");
-        speak(data.reply);
+        const reply = data.reply;
+        appendMessage(reply, "ayucoro");
+        speak(reply);
+
+        // 🔄 Image change logic based on reply content
+        let imageToShow = "ayucoro.png"; // default image
+
+        if (reply.includes("こんにちは") || reply.includes("ありがとう")) {
+          imageToShow = "038_i.jpg";
+        } else if (reply.includes("さようなら")) {
+          imageToShow = "039_i.jpg";
+        } else if (reply.includes("びっくり") || reply.includes("驚いた")) {
+          imageToShow = "040_i.jpg";
+        } else if (reply.includes("困った") || reply.includes("苦しい")) {
+          imageToShow = "044_i.jpg";
+        }
+
+        imgElement.src = `ayucoro/${imageToShow}`;
+        imgElement.onerror = () => {
+          imgElement.src = "ayucoro/ayucoro.png";
+        };
+
       } catch (error) {
         appendMessage("エラーが発生しました。", "ayucoro");
         console.error(error);
@@ -181,7 +202,7 @@
       speechSynthesis.speak(utterance);
     }
 
-    // ✅ Voice input: Speech Recognition (webkit only)
+    // 🎤 Voice input
     if ('webkitSpeechRecognition' in window) {
       const recognition = new webkitSpeechRecognition();
       recognition.lang = "ja-JP";
