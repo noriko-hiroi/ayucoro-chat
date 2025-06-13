@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>あゆコロミュージアムアシスタント</title>
+  <title>あゆコロミュージアムアシスタント (RAG版)</title>
   <style>
     body {
       margin: 0;
@@ -103,21 +103,16 @@
 
     #input-area {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      width: 100%;
     }
 
     #user-input {
-      flex: 1 1 60%;
-      min-width: 150px;
+      flex: 1;
       padding: 10px;
       font-size: 1em;
     }
 
     #send-btn, #mic-btn {
-      flex: 1 1 15%;
-      min-width: 70px;
       padding: 10px;
       font-size: 1em;
       cursor: pointer;
@@ -126,81 +121,67 @@
       background: #4caf50;
       color: white;
     }
-
-    #test-btn {
-      flex: 1 1 100%;
-      padding: 10px;
-      background: #0077cc;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 
   <div id="main-wrapper">
     <div id="left-panel">
-      <img id="ayucoro-img" src="normal.png" alt="Ayucoro cartoon" />
+      <img id="ayucoro-img" src="ayucoro.png" alt="Ayucoro cartoon" />
     </div>
 
     <div id="right-panel">
       <div id="chat-box"></div>
       <div id="input-area">
-        <input id="user-input" type="text" placeholder="文字打っところ" />
+        <input id="user-input" type="text" placeholder="文字打つところ" />
         <button id="send-btn">送信</button>
         <button id="mic-btn">🎤</button>
-        <button id="test-btn">🔊 音声テスト</button>
       </div>
     </div>
   </div>
 
   <script>
-    const ayucoro = document.getElementById("ayucoro-img");
     const chatBox = document.getElementById("chat-box");
     const input = document.getElementById("user-input");
-
-    const sendButton = document.getElementById("send-btn");
     const micButton = document.getElementById("mic-btn");
-    const testButton = document.getElementById("test-btn");
 
-    sendButton.addEventListener("click", async () => {
+    function appendMessage(content, role) {
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${role}-bubble`;
+      bubble.innerText = content;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.getElementById("send-btn").addEventListener("click", async () => {
       const message = input.value.trim();
       if (!message) return;
-      appendUserMessage(message);
+      appendMessage(message, "user");
       input.value = "";
 
-      reactToKeyword(message);
+      try {
+        const res = await fetch("https://73a0-34-139-70-191.ngrok-free.app/rag_query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: message })
+        });
 
-      const res = await fetch("https://YOUR_NGROK_URL/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-
-      const data = await res.json();
-      appendAyucoroMessage(data.reply);
-      speak(data.reply);
+        const data = await res.json();
+        appendMessage(data.reply, "ayucoro");
+        speak(data.reply);
+      } catch (error) {
+        appendMessage("エラーが発生しました。", "ayucoro");
+        console.error(error);
+      }
     });
 
-    function appendUserMessage(msg) {
-      const bubble = document.createElement("div");
-      bubble.className = "bubble user-bubble";
-      bubble.innerText = msg;
-      chatBox.appendChild(bubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ja-JP";
+      speechSynthesis.speak(utterance);
     }
 
-    function appendAyucoroMessage(msg) {
-      const bubble = document.createElement("div");
-      bubble.className = "bubble ayucoro-bubble";
-      bubble.innerText = msg;
-      chatBox.appendChild(bubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Voice input
+    // ✅ Voice input: Speech Recognition (webkit only)
     if ('webkitSpeechRecognition' in window) {
       const recognition = new webkitSpeechRecognition();
       recognition.lang = "ja-JP";
@@ -224,51 +205,8 @@
       };
     } else {
       micButton.disabled = true;
-      micButton.textContent = "🎤（未対応）";
+      micButton.textContent = "🎤（非対応）";
     }
-
-    // Voice output
-    function speak(text) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "ja-JP";
-      speechSynthesis.speak(utterance);
-    }
-
-    // Test button for voice
-    testButton.addEventListener("click", () => {
-      speak("これはテスト音声です。あゆコロは話します！");
-    });
-
-    // Keyword reactions
-    const keywords = {
-      "北条": "知ってる! 戦国武将だ",
-      "武田": "あ、強い敵",
-      "かわいい": "ありがとう！えへ。",
-    };
-
-    function reactToKeyword(message) {
-      for (const [keyword, reaction] of Object.entries(keywords)) {
-        if (message.includes(keyword)) {
-          ayucoro.style.transform = "scale(1.05)";
-          setTimeout(() => {
-            ayucoro.style.transform = "scale(1)";
-          }, 1000);
-          speak(reaction);
-          break;
-        }
-      }
-    }
-
-    // ✅ One-time dummy utterance to "unlock" speaker on Safari
-    let firstInteraction = true;
-    document.body.addEventListener("click", () => {
-      if (firstInteraction) {
-        const dummy = new SpeechSynthesisUtterance(" ");
-        dummy.lang = "ja-JP";
-        speechSynthesis.speak(dummy);
-        firstInteraction = false;
-      }
-    });
   </script>
 </body>
 </html>
