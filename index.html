@@ -25,15 +25,16 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    #left-panel {
-      width: 30%;
-      background: #e0f0ff;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding-top: 20px;
-      border-right: 1px solid #ccc;
-    }
+      #left-panel {
+          width: 30%;
+          background: #e0f0ff;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          padding-top: 20px;
+          border-right: 1px solid #ccc;
+          position: relative;
+      }
 
     #right-panel {
       width: 70%;
@@ -43,10 +44,12 @@
       box-sizing: border-box;
     }
 
-    #ayucoro-img {
-      width: 80%;
-      border-radius: 20px;
-    }
+      #ayucoro-img {
+          width: 80%;
+          border-radius: 20px;
+          position: absolute;
+          animation: jumpMove 1.2s infinite;
+      }
 
     #chat-box {
       flex: 1;
@@ -127,7 +130,7 @@
 
   <div id="main-wrapper">
     <div id="left-panel">
-      <img id="ayucoro-img" src="ayucoro/ayucoro.png" alt="Ayucoro cartoon" />
+        <img id="ayucoro-img" src="jump1.png" alt="Ayucoro jump" />
     </div>
 
     <div id="right-panel">
@@ -144,7 +147,16 @@
     const chatBox = document.getElementById("chat-box");
     const input = document.getElementById("user-input");
     const micButton = document.getElementById("mic-btn");
-    const imgElement = document.getElementById("ayucoro-img");
+      const imgElement = document.getElementById("ayucoro-img");
+
+      //  ジャンプ画像切替アニメーション（JS）
+      const images = ["jump2.png", "jump1.png"];
+      let current = 0;
+      setInterval(() => {
+          current = (current + 1) % images.length;
+          imgElement.src = images[current];
+      }, 600); // 0.6秒ごとに切り替え
+
 
     function appendMessage(content, role) {
       const bubble = document.createElement("div");
@@ -161,7 +173,7 @@
       input.value = "";
 
       try {
-        const res = await fetch("https://dd48-34-139-70-191.ngrok-free.app/rag_query", {
+        const res = await fetch("https://9ed0-34-16-189-84.ngrok-free.app/rag_query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: message })
@@ -173,21 +185,47 @@
         speak(reply);
 
         // 🔄 Image change logic based on reply content
-        let imageToShow = "ayucoro.png"; // default image
+        let imageToShow = "ayucoro/353D.png"; // default image
 
         if (reply.includes("こんにちは") || reply.includes("ありがとう")) {
-          imageToShow = "038_i.jpg";
-        } else if (reply.includes("さようなら")) {
+          imageToShow = "ayucoro/423D.png";
+        } else if (reply.includes("さようなら") || reply.includes("ばいばい")) {
           imageToShow = "039_i.jpg";
         } else if (reply.includes("びっくり") || reply.includes("驚いた")) {
-          imageToShow = "040_i.jpg";
+          imageToShow = "ayucoro/313D.png";
         } else if (reply.includes("困った") || reply.includes("苦しい")) {
           imageToShow = "044_i.jpg";
+        } else if (reply.includes("ごめん")) {
+            imageToShow = "044_i.jpg";
+        } else if (reply.includes("つかえない") || reply.includes("分かりづらい")) {
+            imageToShow = "044_i.jpg";
+        } else if (reply.includes("かわいい") || reply.includes("すごいね")) {
+            imageToShow = "041_i.jpg";
+        } else if (reply.includes("おもしろい") || reply.includes("楽しい")) {
+            imageToShow = "ayucoro/353D.png";
+        } else if (reply.includes("わくわくした") || reply.includes("ジャンプ")) {
+            imageToShow = "041_i.jpg";
+        } else if (reply.includes("おはよう") || reply.includes("こんばんは")) {
+            imageToShow = "039_i.jpg";
+        } else if (reply.includes("わからない") || reply.includes("使えない")) {
+            imageToShow = "044_i.jpg";
+        } else if (reply.includes("厚木")) {
+            imageToShow = "ayucoro/423D.png";
+        } else if (reply.includes("あゆコロ")) {
+            imageToShow = "041_i.jpg";
+        } else if (reply.includes("教えて")) {
+            imageToShow = "ayucoro/313D.png";
+        } else if (reply.includes("びっくり") || reply.includes("驚いた") || reply.includes("すごい")) {
+            imageToShow = "ayucoro/403D.png";
+        } else if (reply.includes("分からない") || reply.includes("難しい")) {
+            imageToShow = "044_i.jpg";
+        } else if (reply.includes("分かった") || reply.includes("なるほど")) {
+            imageToShow = "041_i.jpg";
         }
 
         imgElement.src = `ayucoro/${imageToShow}`;
         imgElement.onerror = () => {
-          imgElement.src = "ayucoro/ayucoro.png";
+          imgElement.src = "ayucoro/353D.png";
         };
 
       } catch (error) {
