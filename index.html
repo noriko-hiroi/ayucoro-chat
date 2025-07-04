@@ -48,7 +48,7 @@
           width: 80%;
           border-radius: 20px;
           position: absolute;
-          animation: jumpMove 1.2s infinite;
+          animation: jumpMove 1.2s;
       }
 
     #chat-box {
@@ -149,14 +149,26 @@
     const micButton = document.getElementById("mic-btn");
       const imgElement = document.getElementById("ayucoro-img");
 
-      //  ジャンプ画像切替アニメーション（JS）
+      // ジャンプ画像切替アニメーション（3回の切替後に停止）
       const images = ["jump2.png", "jump1.png"];
       let current = 0;
-      setInterval(() => {
+      let switchCount = 0;
+      const maxSwitches = 6; // 3 circuits × 2 switches
+
+      const jumpInterval = setInterval(() => {
           current = (current + 1) % images.length;
           imgElement.src = images[current];
-      }, 600); // 0.6秒ごとに切り替え
+          switchCount++;
 
+          if (switchCount >= maxSwitches) {
+              clearInterval(jumpInterval); // stop further switching
+
+              // ✅ Wait one more interval before setting resting image
+              setTimeout(() => {
+                  imgElement.src = "ayucoro/353D.png"; // resting image
+              }, 600);
+          }
+      }, 600);
 
     function appendMessage(content, role) {
       const bubble = document.createElement("div");
@@ -173,7 +185,7 @@
       input.value = "";
 
       try {
-        const res = await fetch("https://9ed0-34-16-189-84.ngrok-free.app/rag_query", {
+        const res = await fetch("https://0370-34-32-248-157.ngrok-free.app/rag_query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: message })
@@ -185,14 +197,14 @@
         speak(reply);
 
         // 🔄 Image change logic based on reply content
-        let imageToShow = "ayucoro/353D.png"; // default image
+        let imageToShow = "353D.png"; // default image
 
         if (reply.includes("こんにちは") || reply.includes("ありがとう")) {
-          imageToShow = "ayucoro/423D.png";
+          imageToShow = "423D.png";
         } else if (reply.includes("さようなら") || reply.includes("ばいばい")) {
           imageToShow = "039_i.jpg";
         } else if (reply.includes("びっくり") || reply.includes("驚いた")) {
-          imageToShow = "ayucoro/313D.png";
+          imageToShow = "313D.jpg";
         } else if (reply.includes("困った") || reply.includes("苦しい")) {
           imageToShow = "044_i.jpg";
         } else if (reply.includes("ごめん")) {
@@ -202,21 +214,21 @@
         } else if (reply.includes("かわいい") || reply.includes("すごいね")) {
             imageToShow = "041_i.jpg";
         } else if (reply.includes("おもしろい") || reply.includes("楽しい")) {
-            imageToShow = "ayucoro/353D.png";
+            imageToShow = "353Dnm.jpg";
         } else if (reply.includes("わくわくした") || reply.includes("ジャンプ")) {
-            imageToShow = "041_i.jpg";
+            imageToShow = "jump2.jpg";
         } else if (reply.includes("おはよう") || reply.includes("こんばんは")) {
             imageToShow = "039_i.jpg";
         } else if (reply.includes("わからない") || reply.includes("使えない")) {
             imageToShow = "044_i.jpg";
         } else if (reply.includes("厚木")) {
-            imageToShow = "ayucoro/423D.png";
+            imageToShow = "423Dnm.jpg";
         } else if (reply.includes("あゆコロ")) {
             imageToShow = "041_i.jpg";
         } else if (reply.includes("教えて")) {
-            imageToShow = "ayucoro/313D.png";
+            imageToShow = "031_i.jpg";
         } else if (reply.includes("びっくり") || reply.includes("驚いた") || reply.includes("すごい")) {
-            imageToShow = "ayucoro/403D.png";
+            imageToShow = "403D.jpg";
         } else if (reply.includes("分からない") || reply.includes("難しい")) {
             imageToShow = "044_i.jpg";
         } else if (reply.includes("分かった") || reply.includes("なるほど")) {
