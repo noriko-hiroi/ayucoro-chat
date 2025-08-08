@@ -165,7 +165,7 @@
 
               // ✅ Wait one more interval before setting resting image
               setTimeout(() => {
-                  imgElement.src = "ayucoro/353D.png"; // resting image
+                  imgElement.src = "035_i.png"; // resting image
               }, 600);
           }
       }, 600);
@@ -185,7 +185,7 @@
       input.value = "";
 
       try {
-        const res = await fetch("https://0370-34-32-248-157.ngrok-free.app/rag_query", {
+        const res = await fetch("https://66b7539d03fa.ngrok-free.app/rag_query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: message })
@@ -197,14 +197,14 @@
         speak(reply);
 
         // 🔄 Image change logic based on reply content
-        let imageToShow = "353D.png"; // default image
+        let imageToShow = "035_i.png"; // default image
 
         if (reply.includes("こんにちは") || reply.includes("ありがとう")) {
-          imageToShow = "423D.png";
+          imageToShow = "038_i.jpg";
         } else if (reply.includes("さようなら") || reply.includes("ばいばい")) {
           imageToShow = "039_i.jpg";
         } else if (reply.includes("びっくり") || reply.includes("驚いた")) {
-          imageToShow = "313D.jpg";
+          imageToShow = "040_i.jpg";
         } else if (reply.includes("困った") || reply.includes("苦しい")) {
           imageToShow = "044_i.jpg";
         } else if (reply.includes("ごめん")) {
@@ -214,30 +214,32 @@
         } else if (reply.includes("かわいい") || reply.includes("すごいね")) {
             imageToShow = "041_i.jpg";
         } else if (reply.includes("おもしろい") || reply.includes("楽しい")) {
-            imageToShow = "353Dnm.jpg";
+            imageToShow = "035_i.png";
         } else if (reply.includes("わくわくした") || reply.includes("ジャンプ")) {
             imageToShow = "jump2.jpg";
         } else if (reply.includes("おはよう") || reply.includes("こんばんは")) {
-            imageToShow = "039_i.jpg";
+            imageToShow = "038_i.jpg";
         } else if (reply.includes("わからない") || reply.includes("使えない")) {
             imageToShow = "044_i.jpg";
         } else if (reply.includes("厚木")) {
-            imageToShow = "423Dnm.jpg";
+            imageToShow = "031_i.jpg";
         } else if (reply.includes("あゆコロ")) {
-            imageToShow = "041_i.jpg";
+            imageToShow = "039_i.jpg";
         } else if (reply.includes("教えて")) {
             imageToShow = "031_i.jpg";
         } else if (reply.includes("びっくり") || reply.includes("驚いた") || reply.includes("すごい")) {
-            imageToShow = "403D.jpg";
+            imageToShow = "040_i.jpg";
         } else if (reply.includes("分からない") || reply.includes("難しい")) {
             imageToShow = "044_i.jpg";
         } else if (reply.includes("分かった") || reply.includes("なるほど")) {
             imageToShow = "041_i.jpg";
+        } else if (reply.includes("行きたい") || reply.includes("出かけたい")) {
+            imageToShow = "042_i_79728770.jpg";
         }
 
         imgElement.src = `ayucoro/${imageToShow}`;
         imgElement.onerror = () => {
-          imgElement.src = "ayucoro/353D.png";
+          imgElement.src = "035_i.png";
         };
 
       } catch (error) {
